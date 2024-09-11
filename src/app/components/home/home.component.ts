@@ -1,83 +1,150 @@
-import { Component } from '@angular/core';
-import { ProductService } from '../../services/product.service';
-import { Product, Products } from '../../../types';
-import { ProductComponent } from '../product/product.component';
+import { Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PaginatorModule } from 'primeng/paginator';
+import { Paginator, PaginatorModule } from 'primeng/paginator';
+import { ButtonModule } from 'primeng/button';
+import { ProductComponent } from '../product/product.component';
+import { EditPopupComponent } from '../edit-popup/edit-popup.component';
+import { Product, Products } from '../../../types';
+import { ProductService } from '../../services/product.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [ProductComponent, CommonModule, PaginatorModule],
+  imports: [
+    ProductComponent,
+    CommonModule,
+    PaginatorModule,
+    EditPopupComponent,
+    ButtonModule,
+  ],
+  providers: [ProductService],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
 export class HomeComponent {
-  constructor(private productService: ProductService) {}
+  constructor(private productsService: ProductService) {}
+
+  @ViewChild('paginator') paginator: Paginator | undefined;
 
   products: Product[] = [];
-  totalRecords: number = 0;
-  rows: number = 5;
-  apiUrl: string = 'http://localhost:3000/clothes';
 
-  ngOnInit(): void {
-    this.fectProducts(0, this.rows);
+  totalRecords: number = 0;
+  rows: number = 12;
+
+  displayEditPopup: boolean = false;
+  displayAddPopup: boolean = false;
+
+  toggleEditPopup(product: Product) {
+    this.selectedProduct = product;
+    this.displayEditPopup = true;
+  }
+
+  toggleDeletePopup(product: Product) {
+    if (!product.id) {
+      return;
+    }
+
+    this.deleteProduct(product.id);
+  }
+
+  toggleAddPopup() {
+    this.displayAddPopup = true;
+  }
+
+  selectedProduct: Product = {
+    id: 0,
+    name: '',
+    image: '',
+    price: '',
+    rating: 0,
+  };
+
+  onConfirmEdit(product: Product) {
+    if (!product.id) {
+      return;
+    }
+
+    this.editProduct(product, product.id);
+    this.displayEditPopup = false;
+  }
+
+  onConfirmAdd(product: Product) {
+    this.addProduct(product);
+    this.displayAddPopup = false;
+  }
+
+  onProductOutput(product: Product) {
+    console.log(product, 'Output');
   }
 
   onPageChange(event: any) {
-    this.fectProducts(event.page, event.rows);
+    this.fetchProducts(event.page, event.rows);
   }
 
-  fectProducts(page: number, perPage: number) {
-    this.productService
-      .getProducts(this.apiUrl, {
-        page: page,
-        perPage: perPage,
-      })
+  resetPaginator() {
+    this.paginator?.changePage(0);
+  }
+
+  fetchProducts(page: number, perPage: number) {
+    this.productsService
+      .getProducts('http://localhost:3000/clothes', { page, perPage })
       .subscribe({
-        next: (products: Products) => {
-          this.products = products.items;
-          this.totalRecords = products.total;
+        next: (data: Products) => {
+          this.products = data.items;
+          this.totalRecords = data.total;
         },
-        error: (error) => {
-          console.error('Error fetching products:', error);
+        error: (error: string) => {
+          console.log(error);
         },
       });
   }
 
   editProduct(product: Product, id: number) {
-    this.productService.editProduct(this.apiUrl + '/' + id, product).subscribe({
-      next: () => {
-        console.log('Product updated successfully');
-        this.fectProducts(0, this.rows);
-      },
-      error: (error) => {
-        console.error('Error updating product:', error);
-      },
-    });
-  }
-
-  addProduct(product: Product) {
-    this.productService.addProduct(this.apiUrl, product).subscribe({
-      next: () => {
-        console.log('Product added successfully');
-        this.fectProducts(0, this.rows);
-      },
-      error: (error) => {
-        console.error('Error adding product:', error);
-      },
-    });
+    this.productsService
+      .editProduct(`http://localhost:3000/clothes/${id}`, product)
+      .subscribe({
+        next: (data: Product) => {
+          console.log(data);
+          this.fetchProducts(0, this.rows);
+          this.resetPaginator();
+        },
+        error: (error: string) => {
+          console.log(error);
+        },
+      });
   }
 
   deleteProduct(id: number) {
-    this.productService.deleteProduct(this.apiUrl + '/' + id).subscribe({
-      next: () => {
-        console.log('Product deleted successfully');
-        this.fectProducts(0, this.rows);
-      },
-      error: (error) => {
-        console.error('Error deleting product:', error);
-      },
-    });
+    this.productsService
+      .deleteProduct(`http://localhost:3000/clothes/${id}`)
+      .subscribe({
+        next: (data: Product) => {
+          console.log(data);
+          this.fetchProducts(0, this.rows);
+          this.resetPaginator();
+        },
+        error: (error: string) => {
+          console.log(error);
+        },
+      });
+  }
+
+  addProduct(product: Product) {
+    this.productsService
+      .addProduct(`http://localhost:3000/clothes`, product)
+      .subscribe({
+        next: (data: Product) => {
+          console.log(data);
+          this.fetchProducts(0, this.rows);
+          this.resetPaginator();
+        },
+        error: (error: string) => {
+          console.log(error);
+        },
+      });
+  }
+
+  ngOnInit() {
+    this.fetchProducts(0, this.rows);
   }
 }
