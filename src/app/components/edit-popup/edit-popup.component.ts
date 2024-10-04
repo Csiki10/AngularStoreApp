@@ -37,7 +37,7 @@ export class EditPopupComponent {
   @Input() display: boolean = false;
   @Input() header!: string;
   @Input() product: Product = {
-    id: 0,
+    id: '',
     name: '',
     price: '',
     image: '',
