@@ -35,8 +35,24 @@ export interface Products {
   totalPages: number;
 }
 
+export interface ProductsDto {
+  items: ProductDto[];
+  total: number;
+  page: number;
+  perPage: number;
+  totalPages: number;
+}
+
 export interface Product {
   id?: string;
+  price: string;
+  name: string;
+  image: string;
+  rating: number;
+}
+
+export interface ProductDto {
+  _id?: string;
   price: string;
   name: string;
   image: string;

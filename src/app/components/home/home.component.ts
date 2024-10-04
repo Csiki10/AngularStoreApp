@@ -4,7 +4,7 @@ import { Paginator, PaginatorModule } from 'primeng/paginator';
 import { ButtonModule } from 'primeng/button';
 import { ProductComponent } from '../product/product.component';
 import { EditPopupComponent } from '../edit-popup/edit-popup.component';
-import { Product, Products } from '../../../types';
+import { Product, Products, ProductsDto } from '../../../types';
 import { ProductService } from '../../services/product.service';
 
 @Component({
@@ -88,8 +88,8 @@ export class HomeComponent {
   fetchProducts(page: number, perPage: number) {
     this.productsService.getProducts({ page, perPage }).subscribe({
       next: (data: Products) => {
+        console.log(data);
         this.products = data.items;
-        console.log(this.products);
         this.totalRecords = data.total;
       },
       error: (error: string) => {
@@ -112,12 +112,15 @@ export class HomeComponent {
   }
 
   deleteProduct(id: string) {
+    console.log(id);
+
     this.productsService.deleteProduct(id).subscribe({
       next: (data: Product) => {
         console.log(data);
         this.fetchProducts(0, this.rows);
         this.resetPaginator();
       },
+
       error: (error: string) => {
         console.log(error);
       },
