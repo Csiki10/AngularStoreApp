@@ -112,11 +112,8 @@ export class HomeComponent {
   }
 
   deleteProduct(id: string) {
-    console.log(id);
-
     this.productsService.deleteProduct(id).subscribe({
-      next: (data: Product) => {
-        console.log(data);
+      next: () => {
         this.fetchProducts(0, this.rows);
         this.resetPaginator();
       },

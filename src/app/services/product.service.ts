@@ -74,10 +74,8 @@ export class ProductService {
   };
 
   deleteProduct = (id: string): Observable<ProductDto> => {
-    return this.apiService
-      .delete<ProductDto>(this.prod_url + '/' + id, {
-        responseType: 'json',
-      })
-      .pipe(map((data: ProductDto) => this.dtoToProduct(data)));
+    return this.apiService.delete(this.prod_url + '/' + id, {
+      responseType: 'json',
+    });
   };
 }

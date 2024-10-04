@@ -63,7 +63,6 @@ export class EditPopupComponent {
 
   onConfirm() {
     const { name, price, image, rating } = this.productForm.value;
-    console.warn(name, price, image, rating);
 
     this.confirm.emit({
       id: this.product.id,
